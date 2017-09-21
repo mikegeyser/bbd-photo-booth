@@ -1,0 +1,23 @@
+{
+  "name": "bbd-photo-booth-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.4",
+    "express-fileupload": "^0.2.0",
+    "bluebird": "^3.5.0",
+    "eslint": "^4.6.1",
+    "ffmpeg": "0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "gm": "^1.23.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  }
+}

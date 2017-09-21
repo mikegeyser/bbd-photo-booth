@@ -1,0 +1,20 @@
+{
+  "name": "gif-photo-booth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "eslint": "^4.6.1",
+    "ffmpeg": "0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "gm": "^1.23.0",
+    "node-opencv": "0.0.2-security",
+    "opencv.js": "latest"
+  }
+}
