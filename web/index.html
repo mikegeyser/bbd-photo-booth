@@ -1,14 +1,26 @@
 <html>
-    <head>
-    </head>
-    <body>
-        <h1>Test</h1>
 
-        <video id="video"></video>
-        <script src="index.js"></script>
+<head>
+    <link href="styles.css" rel="stylesheet" type="text/css" />
+</head>
 
-        <button onclick="record()">Record!</button>
-        <button onclick="stop()">Stop</button>
-        <a id="download" href="#">Download</a>
-    </body>
-</html> 
+<body>
+    <div class="header">
+        <img src="/images/logo.png" onclick="startCountdown()"/>
+        <p>Selfie Station</p>
+    </div>
+    <div id="overlay"></div>
+
+    <video id="video" class="video"></video>
+    <script src="index.js"></script>
+
+    <br/><br/>
+    <div class="footer">
+        <div class="rocording-block">
+            <div id="recording">Recording...</div>
+        </div>
+        <img src="/images/footer.png" />
+    </div>
+</body>
+
+</html>
