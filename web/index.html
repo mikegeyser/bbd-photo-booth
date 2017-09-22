@@ -5,13 +5,19 @@
 </head>
 
 <body>
+    <div class="loading" id="load">
+        <img src="/images/Infinity.svg" />
+    </div>
+
     <div class="header">
-        <img src="/images/logo.png" onclick="startCountdown()"/>
-        <p>Selfie Station</p>
+        <img src="/images/logo.png" onclick="clickButton()"/>
+        <p>Photo Booth</p>
     </div>
     <div id="overlay"></div>
 
-    <video id="video" class="video"></video>
+    <video id="video" class="box"></video>
+    <img id="gif" class="box" alt="gif" />
+
     <script src="index.js"></script>
 
     <br/><br/>

@@ -1,4 +1,17 @@
 let recording = false;
+let gifShown = false;
+let gifElement, videoElement, loadingElement;
+
+function clickButton() {
+  if (gifShown) {
+    gifShown = false;
+    gifElement.src = "";
+    gifElement.style.display = "none";
+    videoElement.style.display = "block";
+  } else {
+    startCountdown();
+  }
+}
 
 function startCountdown() {
   if (!recording) {
@@ -45,6 +58,7 @@ function record() {
   });
 
   mediaRecorder.addEventListener("stop", function () {
+    loadingElement.style.display = "block";
     let downloadLink = document.getElementById("download");
     let blob = new Blob(recordedChunks);
 
@@ -56,6 +70,16 @@ function record() {
     xhr.open("POST", "/save", true);
     // xhr.send();
     xhr.send(formdata);
+
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState == 4 && xhr.status == 200) {
+        loadingElement.style.display = "none";
+        gifElement.style.display = "block";
+        videoElement.style.display = "none";
+        gifElement.src = xhr.responseText;
+        gifShown = true;
+      }
+    };
 
   });
 
@@ -72,10 +96,18 @@ function stop() {
     mediaRecorder.stop();
     recordDiv.style.display = "none";
     recording = false;
-  }, 6000);
+  }, 3000);
 }
 
 function startCamera() {
+  loadingElement = document.getElementById("load")
+  gifElement = document.getElementById("gif");
+  videoElement = document.getElementById("video");
+
+  loadingElement.style.display = "none";
+  gifElement.style.display = "none";
+  videoElement.style.display = "block";
+
   navigator.mediaDevices
     .getUserMedia({ video: resolution, audio: false })
     .then(function (s) {
