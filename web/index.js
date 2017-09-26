@@ -39,8 +39,8 @@ let video = document.getElementById("video");
 let stream = null;
 
 let resolution = {
-  width: { exact: 640 },
-  height: { exact: 480 }
+  width: { exact: 800 },
+  height: { exact: 600 }
   //,frameRate: { ideal: 5, max: 5 }
 };
 

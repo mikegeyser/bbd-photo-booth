@@ -9,13 +9,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.15.4",
-    "express-fileupload": "^0.2.0",
     "bluebird": "^3.5.0",
     "eslint": "^4.6.1",
+    "express": "^4.15.4",
+    "express-fileupload": "^0.2.0",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
-    "gm": "^1.23.0"
+    "glob": "^7.1.2",
+    "gm": "^1.23.0",
+    "rimraf": "^2.6.2"
   },
   "devDependencies": {
     "nodemon": "^1.12.1"

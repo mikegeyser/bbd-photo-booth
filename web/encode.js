@@ -3,6 +3,9 @@ const gm = require("gm");
 const Promise = require("bluebird");
 const fs = require("fs");
 const path = require("path");
+const glob = require("glob");
+const rimraf = require("rimraf");
+
 // Based on: https://superuser.com/questions/556029/how-do-i-convert-a-video-to-gif-using-ffmpeg-with-reasonable-quality
 
 // // Clear out files
@@ -20,7 +23,7 @@ const path = require("path");
 //         .fps(10)
 //         .save("frames/ffout%03d.png")
 //         .on("end", () => {
-  
+
 //             gm("frames/ffout*.png")
 //               .write("test.gif", err => {
 //                 if (err) console.log(err);
@@ -34,13 +37,23 @@ const path = require("path");
 //ffmpeg -i test2.mov -vf chromakey=0x008001:0.25:0.0 -c:v qtrle out.mov
 //ffmpeg -i test.mov -vf chromakey=0x9fb68f:0.25:0.0 -c:v qtrle out.mov
 
-const extractFrames = (filename) => 
+const extractFrames = filename =>
   new Promise((resolve, reject) => {
-    let input_path = path.join(__dirname, "videos", "input", `${filename}.webm`);
-    let frame_path = path.join(__dirname, "videos", "frames", `${filename}-%03d.png`);
+    let input_path = path.join(
+      __dirname,
+      "videos",
+      "input",
+      `${filename}.webm`
+    );
+    let frame_path = path.join(
+      __dirname,
+      "videos",
+      "frames",
+      `${filename}-%03d.png`
+    );
 
     ffmpeg(input_path)
-      .size("640x?")
+      .size("800x?")
       .fps(10)
       .save(frame_path)
       .on("end", err => {
@@ -50,10 +63,10 @@ const extractFrames = (filename) =>
       });
   });
 
-const convertAllFrames = (filename) => _ =>
+const convertAllFrames = filename => _ =>
   new Promise((resolve, reject) => {
     let frame_directory = path.join(__dirname, "videos", "frames");
-    
+
     fs.readdir(frame_directory, (err, files) => {
       if (err) throw error;
 
@@ -67,7 +80,7 @@ const createAlphaMask = filename =>
     let frame_path = path.join(__dirname, "videos", "frames", filename);
     let mask_path = path.join(__dirname, "videos", "masks", filename);
     let result_path = path.join(__dirname, "videos", "results", filename);
-    
+
     gm(frame_path)
       .negative()
       .edge()
@@ -90,27 +103,79 @@ const createAlphaMask = filename =>
       });
   });
 
-const convertToGif = (filename) => _ =>
+const overlayLogoOnAllFiles = filename => _ =>
   new Promise((resolve, reject) => {
-    let frame_path = path.join(__dirname, "videos", "frames", `${filename}-*.png`);
-    let output_path = path.join(__dirname, "videos", "output", `${filename}.gif`);
-    
-    // Hack hack :|
-    //setTimeout(_ => {
-      gm(frame_path).write(output_path, err => {
+    let frame_path = path.join(
+      __dirname,
+      "videos",
+      "frames",
+      `${filename}-*.png`
+    );
+
+    glob(frame_path, (err, files) => {
+      if (err) throw err;
+
+      let overlays = files.map(file_path => overlayLogo(file_path));
+
+      Promise.all(overlays).then(_ => {
+        resolve();
+      });
+    });
+  });
+
+const overlayLogo = file_path =>
+  new Promise((resolve, reject) => {
+    gm(file_path)
+      .composite("images/overlay.png")
+      .geometry("+0+450")
+      .write(file_path, err => {
         if (err) throw err;
-        console.log("convertToGif completed");
 
         resolve();
       });
-    // }, 10000);
   });
 
+const convertToGif = filename => _ =>
+  new Promise((resolve, reject) => {
+    let frame_path = path.join(
+      __dirname,
+      "videos",
+      "frames",
+      `${filename}-*.png`
+    );
+    let output_path = path.join(
+      __dirname,
+      "videos",
+      "output",
+      `${filename}.gif`
+    );
 
+    gm(frame_path).write(output_path, err => {
+      if (err) throw err;
+      console.log("convertToGif completed");
 
-const encode = (filename) =>
+      resolve();
+    });
+  });
+
+const cleanup = filename => _ =>
+  new Promise((resolve, reject) => {
+    const handle_error = err => {
+      if (err) console.log(err);
+    };
+
+    rimraf(`videos/input/${filename}*`, handle_error);
+    rimraf(`videos/frames/${filename}*`, handle_error);
+    rimraf(`videos/masks/${filename}*`, handle_error);
+
+    resolve();
+  });
+
+const encode = filename =>
   extractFrames(filename)
     // .then(convertAllFrames(filename))
-    .then(convertToGif(filename));
+    .then(overlayLogoOnAllFiles(filename))
+    .then(convertToGif(filename))
+    .finally(cleanup(filename));
 
 module.exports = encode;
