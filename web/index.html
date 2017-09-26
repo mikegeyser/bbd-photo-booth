@@ -10,23 +10,32 @@
     </div>
 
     <div class="header">
+        <img src="images/bbd-wtc-logo.png" onclick="clickButton()" />
+    </div>
+
+    <!-- <div class="header">
         <img src="/images/logo.png" onclick="clickButton()"/>
         <p>Photo Booth</p>
-    </div>
+    </div> -->
     <div id="overlay"></div>
-
     <video id="video" class="box"></video>
     <img id="gif" class="box" alt="gif" />
 
-    <script src="index.js"></script>
-
-    <br/><br/>
-    <div class="footer">
-        <div class="rocording-block">
-            <div id="recording">Recording...</div>
+    <div class="rocording-block">
+        <div id="initial-message">Press space to record!</div>
+        <div id="recording-message" style="display: none;">Recording...</div>
+        <div id="completed-message" style="display: none;">
+            Speak to the team to share on social media.
+            <div class="subtext">(Alternatively, push space to start again.)</div>
         </div>
-        <img src="/images/footer.png" />
     </div>
+
+
+    <div class="footer">
+        <img src="images/footer.png" />
+    </div>
+
+    <script src="index.js"></script>
 </body>
 
 </html>
