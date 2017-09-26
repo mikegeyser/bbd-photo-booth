@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
-const fileUpload = require('express-fileupload');
+const fileUpload = require("express-fileupload");
+const encode = require("./encode.js");
 
 app.use(express.static(__dirname));
 app.use(fileUpload());
@@ -21,7 +22,9 @@ app.post("/save", function(req, res) {
   video.mv(`videos/input/${filename}.webm`, function(err) {
     if (err) return res.status(500).send(err);
 
-    res.send(`videos/output/${filename}.gif`);
+    encode(filename).then(_ => {
+      res.send(`videos/output/${filename}.gif`)
+    });
   });
 });
 

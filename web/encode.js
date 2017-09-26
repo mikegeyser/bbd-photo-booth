@@ -2,9 +2,9 @@ const ffmpeg = require("fluent-ffmpeg");
 const gm = require("gm");
 const Promise = require("bluebird");
 const fs = require("fs");
+const path = require("path");
 // Based on: https://superuser.com/questions/556029/how-do-i-convert-a-video-to-gif-using-ffmpeg-with-reasonable-quality
 
-let directory = "frames";
 // // Clear out files
 // let directory = "frames";
 // fs.readdir(directory, (err, files) => {
@@ -20,7 +20,7 @@ let directory = "frames";
 //         .fps(10)
 //         .save("frames/ffout%03d.png")
 //         .on("end", () => {
-
+  
 //             gm("frames/ffout*.png")
 //               .write("test.gif", err => {
 //                 if (err) console.log(err);
@@ -34,12 +34,15 @@ let directory = "frames";
 //ffmpeg -i test2.mov -vf chromakey=0x008001:0.25:0.0 -c:v qtrle out.mov
 //ffmpeg -i test.mov -vf chromakey=0x9fb68f:0.25:0.0 -c:v qtrle out.mov
 
-const extractFrames = _ =>
+const extractFrames = (filename) => 
   new Promise((resolve, reject) => {
-    ffmpeg("out.mov")
+    let input_path = path.join(__dirname, "videos", "input", `${filename}.webm`);
+    let frame_path = path.join(__dirname, "videos", "frames", `${filename}-%03d.png`);
+
+    ffmpeg(input_path)
       .size("640x?")
       .fps(10)
-      .save("frames/ffout%03d.png")
+      .save(frame_path)
       .on("end", err => {
         if (err) reject(err);
         console.log("extractFrames completed");
@@ -47,9 +50,11 @@ const extractFrames = _ =>
       });
   });
 
-const convertAllFrames = _ =>
+const convertAllFrames = (filename) => _ =>
   new Promise((resolve, reject) => {
-    fs.readdir(directory, (err, files) => {
+    let frame_directory = path.join(__dirname, "videos", "frames");
+    
+    fs.readdir(frame_directory, (err, files) => {
       if (err) throw error;
 
       Promise.all(files.map(file => createAlphaMask(file))).then(resolve);
@@ -59,7 +64,11 @@ const convertAllFrames = _ =>
 // https://making.lyst.com/2014/02/13/background-removal/
 const createAlphaMask = filename =>
   new Promise((resolve, reject) => {
-    gm(`frames/${filename}`)
+    let frame_path = path.join(__dirname, "videos", "frames", filename);
+    let mask_path = path.join(__dirname, "videos", "masks", filename);
+    let result_path = path.join(__dirname, "videos", "results", filename);
+    
+    gm(frame_path)
       .negative()
       .edge()
       // .blur(2)
@@ -67,45 +76,41 @@ const createAlphaMask = filename =>
       // .fill("magenta")
       // .draw("color 0,0 floodfill")
       // .transparent("magenta")
-      .write(`masks/${filename}`, err => {
+      .write(mask_path, err => {
         if (err) reject(err);
         console.log("createAlphaMask completed");
 
-        gm(`frames/${filename}`)
-          .composite(`masks/${filename}`)
+        gm(frame_path)
+          .composite(mask_path)
           .compose("CopyOpacity")
-          .write(`results/${filename}`, function(err) {
+          .write(result_path, function(err) {
             if (err) throw err;
           });
         resolve();
       });
   });
 
-const convertToGif = _ =>
+const convertToGif = (filename) => _ =>
   new Promise((resolve, reject) => {
-    setTimeout(_ => {
-      gm("frames/ffout*.png").write("test.gif", err => {
-        if (err) reject(err);
+    let frame_path = path.join(__dirname, "videos", "frames", `${filename}-*.png`);
+    let output_path = path.join(__dirname, "videos", "output", `${filename}.gif`);
+    
+    // Hack hack :|
+    //setTimeout(_ => {
+      gm(frame_path).write(output_path, err => {
+        if (err) throw err;
         console.log("convertToGif completed");
 
         resolve();
       });
-    }, 10000);
+    // }, 10000);
   });
 
-const convertToGif2 = _ =>
-  new Promise((resolve, reject) => {
-    setTimeout(_ => {
-      ffmpeg("frames/ffout%03d.png")
-        .save("test.gif")
-        .on("end", err => {
-          if (err) reject(err);
-          console.log("convertToGif2 completed");
-          resolve();
-        });
-    }, 10000);
-  });
 
-extractFrames()
-  // .then(convertAllFrames)
-  // .then(convertToGif);
+
+const encode = (filename) =>
+  extractFrames(filename)
+    // .then(convertAllFrames(filename))
+    .then(convertToGif(filename));
+
+module.exports = encode;
